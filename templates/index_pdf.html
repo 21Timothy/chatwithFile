@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8">
+    <title>Chat with AI</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f1f1f1;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .file-upload {
+            margin-bottom: 20px;
+            border: 2px dashed #ccc;
+            background-color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #999;
+        }
+
+        .file-upload-label {
+            margin-bottom: 10px;
+        }
+
+        .file-upload-button {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .file-upload-button:hover {
+            background-color: #3e8e41;
+        }
+
+        .chat-messages {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            /*border-radius: 4px;*/
+            /*padding: 10px;*/
+            overflow-y: scroll;
+            height: 500px;
+            max-width: 100%;
+            display: flow;
+            margin-bottom: 20px;
+
+        }
+
+        .outgoing {
+            background-color: #fff;
+            /*border: 1px solid #ccc;*/
+            /*flex-grow: 1;*/
+            /*display: flex;*/
+            /*flex-direction: row;*/
+            align-items: center;
+            margin-bottom: 10px;
+            max-width: 100%;
+            padding: 2%;
+            /*margin: 10px;*/
+            /*border-radius: 10px;*/
+        }
+
+        .incoming {
+            background-color: #f1f1f1;
+            /*border: 1px solid #ccc;*/
+            /*flex-grow: 1;*/
+            /*display: flex;*/
+            /*flex-direction: row;*/
+            align-items: center;
+            margin-bottom: 10px;
+            max-width: 100%;
+            padding: 2%;
+            /*margin: 10px;*/
+            /*border-radius: 10px;*/
+        }
+
+        .message-text {
+            background-color: #fff;
+            color: #000;
+            justify-content: flex-start;
+            flex-grow: 1;
+            /*padding: 20%;*/
+            margin: 10px;
+            /*border-radius: 10px;*/
+            /*max-width: 50%;*/
+            text-align: right;
+            /*margin-left: 90%;*/
+        }
+
+        .answer {
+            background-color: #f1f1f1;
+            color: #000;
+            justify-content: flex-end;
+            flex-grow: 1;
+            /*padding: 20%;*/
+            text-align: left;
+            margin: 10px;
+            /*margin-top: 10px;*/
+        }
+
+
+        .chat-form {
+            display: flex;
+            margin-bottom: 40px;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: none;
+            border-bottom: 2px solid #ccc;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .chat-button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .chat-button:hover {
+            background-color: #3e8e41;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="file-upload">
+        <div class="file-upload-label">Drag and drop files here or</div>
+<!--        <div class="file-upload-button">-->
+        <input class="file-upload-button" id="file-input" type="file"
+               accept="image/*, .pdf, .doc, .docx, .xls, .xlsx, .txt">
+<!--        </div>-->
+        <div id="file-name" class="file-name"></div>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-area">
+        <form class="chat-form" id="chat-form">
+            <input class="chat-input" id="chat-input" type="text" placeholder="Ask a question...">
+            <button class="chat-button" type="submit">Send</button>
+        </form>
+    </div>
+</div>
+<script>
+    // Selectors
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
+    const messages = document.getElementById('chat-messages');
+    const fileInput = document.getElementById('file-input');
+    const fileName = document.getElementById('file-name');
+
+    // Event listeners
+    form.addEventListener('submit', sendMessage);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage(e);
+        }
+    });
+    fileInput.addEventListener('change', uploadFile);
+
+    // Functions
+    function sendMessage(event) {
+        event.preventDefault();
+
+        const messageText = input.value.trim();
+
+        if (messageText === '') {
+            return;
+        }
+
+
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('chat-message', 'outgoing');
+        const messageTextElement = document.createElement('div');
+        messageTextElement.classList.add('message-text');
+        messageTextElement.textContent = messageText;
+        messageContainer.appendChild(messageTextElement);
+
+        messages.appendChild(messageContainer);
+
+        input.value = '';
+
+        // Send message to backend
+        sendToBackend(messageText);
+
+    }
+
+    function receiveMessage(messageText) {
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('chat-message', 'incoming');
+        const messageTextElement = document.createElement('div');
+        messageTextElement.classList.add('answer');
+        messageTextElement.textContent = messageText;
+        messageContainer.appendChild(messageTextElement);
+
+        messages.appendChild(messageContainer);
+
+        // Scroll to bottom of messages
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function uploadFile(event) {
+        const file = event.target.files[0];
+        const fileNameParts = file.name.split('.');
+        const fileExtension = fileNameParts[fileNameParts.length - 1];
+        const allowedFileExtensions = ['txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png', 'gif'];
+
+        if (!allowedFileExtensions.includes(fileExtension.toLowerCase())) {
+            alert('Invalid file type. Please choose a PDF, Word document, Excel spreadsheet, or image file.');
+            return;
+        }
+
+        fileName.textContent = file.name;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('http://127.0.0.1:5000/api/upload', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.text())
+            .catch(error => console.error(error));
+    }
+
+    function sendToBackend(message) {
+        fetch('http://127.0.0.1:5000/api/answer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+        })
+            .then(response => response.json())
+            .then(response => {
+                receiveMessage(response.answer);
+            })
+            .catch(error => console.error(error));
+    }
+
+</script>
+</body>
+</html>

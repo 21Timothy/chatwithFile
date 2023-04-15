@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>GPT Chat</title>
+  <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
+</head>
+<body>
+<div id="chat-container">
+  <div id="chat-header">
+    <h1>GPT Chat</h1>
+  </div>
+  <div id="chat-messages">
+    <!-- 这里将会显示聊天记录 -->
+  </div>
+  <div id="chat-input">
+    <input type="text" id="chat-input-text" placeholder="请输入问题">
+    <button type='button' id="chat-send-button">发送</button>
+  </div>
+</div>
+
+<script>
+  const chatInput = document.querySelector('#chat-input-text');
+  const chatMessages = document.querySelector('#chat-messages');
+
+  function addMessage(message) {
+    const p = document.createElement('p');
+    p.textContent = message;
+    chatMessages.appendChild(p);
+  }
+
+  function sendMessage() {
+    const message = chatInput.value;
+    addMessage('User: ' + message);
+    chatInput.value = '';
+
+    // 调用后端接口，并在接收到响应后添加到聊天窗口
+    fetch('http://127.0.0.1:5000/api/answer', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+            .then(response => response.json())
+            .then(data => {
+              const message = 'Bot: ' + data.answer;
+              addMessage(message);
+            })
+            .catch(error => {
+              console.error(error);
+              addMessage('Bot: ' + error);
+            });
+  }
+
+  document.querySelector('#chat-send-button').addEventListener('click', sendMessage);
+  chatInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      sendMessage();
+    }
+  });
+
+</script>
+</body>
+</html>

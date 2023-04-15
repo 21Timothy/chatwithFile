@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatGPT</title>
+    <style>
+        body {
+            background-color: #f8f8f8;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .file-upload {
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload label {
+            background-color: #007bff;
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .chat-container {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            overflow-y: scroll;
+            max-height: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .chat-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #007bff;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .answer-message {
+            align-self: flex-start;
+            background-color: #ffffff;
+            color: #000000;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            margin-top: -10px;
+        }
+
+        .input-box {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .input-box input[type="text"] {
+            flex-grow: 1;
+            border-radius: 4px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: none;
+            outline: none;
+        }
+
+        .input-box button {
+            background-color: #007bff;
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+            outline: none;
+        }
+
+        .input-box button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+<!--    <link rel="stylesheet" href="style.css">-->
+</head>
+<body>
+<div class="container">
+    <div class="file-upload">
+        <input type="file" id="file-input">
+        <label for="file-input">选择文件</label>
+        <span id="file-name"></span>
+    </div>
+    <div class="chat-container">
+        <div class="chat-box"></div>
+        <div class="input-box">
+            <input type="text" id="input-text">
+            <button id="send-btn">发送</button>
+        </div>
+    </div>
+</div>
+<script>
+    // 上传文件
+    fileInput.addEventListener('change', handleFileSelect, false);
+
+    function handleFileSelect(event) {
+        event.preventDefault();
+        const file = event.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                // 显示文件名
+                const fileName = document.createElement('p');
+                fileName.innerText = data.fileName;
+                fileDisplayArea.innerHTML = '';
+                fileDisplayArea.appendChild(fileName);
+            })
+            .catch(error => console.error(error));
+    }
+
+    // 发送消息
+    function sendMessage() {
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // 添加用户输入
+        addMessage(message, 'user-message');
+
+        // 发送消息给后端
+        fetch('/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+        })
+            .then(response => response.json())
+            .then(data => {
+                // 添加机器人回答
+                addMessage(data.answer, 'answer-message');
+            })
+            .catch(error => console.error(error));
+
+        // 清空输入框
+        messageInput.value = '';
+    }
+
+    // 添加消息到聊天区
+    function addMessage(message, messageType) {
+        const messageArea = document.getElementById('message-area');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add(messageType);
+        messageElement.innerText = message;
+        messageArea.appendChild(messageElement);
+        messageArea.scrollTop = messageArea.scrollHeight;
+    }
+
+    // 发送消息事件
+    const sendButton = document.getElementById('send-button');
+    sendButton.addEventListener('click', sendMessage);
+
+    document.addEventListener('keydown', function(event) {
+        if (event.code === 'Enter') {
+            sendMessage();
+        }
+    });
+
+</script>
+</body>
+</html>
