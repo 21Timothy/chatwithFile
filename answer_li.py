@@ -10,8 +10,8 @@ from langchain.chains import RetrievalQA, ConversationalRetrievalChain #VectorDB
 from langchain.llms import OpenAI
 import os
 
-os.environ["OPENAI_API_KEY"] = "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"
-os.environ["SERPAPI_API_KEY"] = "80a0f8771352f739cc41e5b9eaf15e9c039c820bb9d397fa3370deb5c5cdd0e5"
+os.environ["OPENAI_API_KEY"] = "xxx"
+os.environ["SERPAPI_API_KEY"] = "xxx"
 
 app = Flask(__name__)
 cors = CORS(app)
